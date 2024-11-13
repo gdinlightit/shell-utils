@@ -29,10 +29,11 @@ work() {
         return 1
     fi
 
-    code "$project_path" &
+    nohup code "$project_path" >/dev/null 2>&1 &
+    disown %?code
 
-    if ! $close_terminal; then
-        exit
+    if $close_terminal; then
+        kill -9 $$
     fi
 }
 

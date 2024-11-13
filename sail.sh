@@ -61,4 +61,5 @@ sail-init() {
     echo "  ./vendor/bin/sail up -d    # Start containers in background"
     echo "  ./vendor/bin/sail down     # Stop containers"
     echo "  ./vendor/bin/sail artisan  # Run artisan commands"
+    echo "  ./vendor/bin/sail shell    # Start a Bash session within your application's container"
 }
