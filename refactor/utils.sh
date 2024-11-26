@@ -78,6 +78,17 @@ is_zsh() {
     [ -n "$ZSH_VERSION" ]
 }
 
+setup_completion() {
+    local command="$1"
+    local completion_function="$2"
+
+    if is_bash; then
+        complete -F "$completion_function" "$command"
+    elif is_zsh; then
+        compdef "$completion_function" "$command"
+    fi
+}
+
 # File extension completion
 setup_file_extension_completion() {
     local command="$1"
