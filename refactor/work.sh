@@ -55,18 +55,4 @@ EOF
     fi
 }
 
-# Shell completion
-if is_bash; then
-    _work_complete() {
-        local cur="${COMP_WORDS[COMP_CWORD]}"
-        local base_path="${BASE_PATH%/}"
-        mapfile -t COMPREPLY < <(cd "$base_path" && compgen -d -- "$cur")
-    }
-    complete -F _work_complete work
-elif is_zsh; then
-    _work_complete() {
-        local base_path="${BASE_PATH%/}"
-        _files -W "$base_path" -/
-    }
-    compdef _work_complete work
-fi
+setup_directory_completion "work" "BASE_PATH"
