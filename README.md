@@ -63,27 +63,87 @@ The script will:
 4. Run database migrations
 5. Display useful Sail commands
 
+### 3. `file-organizer.sh` - File Organization Script
+
+Organizes files with the same base name and different extensions into a dedicated folder.
+
+#### Features
+
+- Moves files with specified base name and extensions into a new directory
+- Comprehensive error handling and input validation
+- Detailed logging to both console and log file
+- Compatible with both bash and zsh
+- Production-level script with best practices
+
+#### Usage
+
+```bash
+file-organizer <base_name> <extension1> [extension2] ...
+```
+
+Example:
+
+```bash
+file-organizer myfile txt pdf doc  # Creates myfile/ and moves myfile.txt, myfile.pdf, myfile.doc into it
+```
+
+The script will:
+
+1. Create a timestamped log file in /tmp
+2. Validate all inputs and file existence
+3. Create the target directory if needed
+4. Move matching files
+5. Clean up empty directories if no files were moved
+6. Provide detailed feedback of all operations
+
 ## Installation
 
-1. Clone or download the scripts to your local machine
-2. For `work.sh`, set your projects base path in the script:
+1. Clone the repository to the shell utilities directory:
+
+```bash
+git clone https://github.com/yourusername/shell-utils.git "${HOME}/shell-utils"
+```
+
+2. For `work.sh`, set your projects base path by editing the script or adding to your shell config:
 
 ```bash
 export BASE_PATH="/path/to/your/projects"
 ```
 
-3. Source the scripts in your shell configuration file:
+3. Source the utilities and scripts in your shell configuration file:
 
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
-source /path/to/work.sh
-source /path/to/sail-init.sh
+source "${HOME}/shell-utils/utils.sh"
+source "${HOME}/shell-utils/work.sh"
+source "${HOME}/shell-utils/sail.sh"
+source "${HOME}/shell-utils/file-organizer.sh"
 ```
 
-4. Reload your shell configuration:
+4. Create the logs directory:
+
+```bash
+mkdir -p "${HOME}/.logs/shell-utils"
+```
+
+5. Reload your shell configuration:
 
 ```bash
 source ~/.bashrc  # or ~/.zshrc
+```
+
+## Directory Structure
+
+```
+${HOME}/
+├── shell-utils/
+│   ├── utils.sh
+│   ├── work.sh
+│   ├── sail.sh
+│   └── file-organizer.sh
+└── .logs/
+    └── shell-utils/
+        └── [script logs]
 ```
 
 ## Contributing
