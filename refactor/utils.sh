@@ -77,3 +77,54 @@ is_bash() {
 is_zsh() {
     [ -n "$ZSH_VERSION" ]
 }
+
+# File extension completion
+setup_file_extension_completion() {
+    local command="$1"
+    shift
+    local default_extensions=("$@")
+
+    if is_bash; then
+        eval "_${command}_complete() {
+            local cur=\"\${COMP_WORDS[COMP_CWORD]}\"
+            if [ \"\$COMP_CWORD\" -eq 1 ]; then
+                mapfile -t COMPREPLY < <(compgen -f -- \"\$cur\" | sed -n 's/\\.[^.]*\$//p' | sort -u)
+            else
+                local extensions=\"${default_extensions[*]}\"
+                mapfile -t COMPREPLY < <(compgen -W \"\$extensions\" -- \"\$cur\")
+            fi
+        }"
+        setup_completion "$command" "_${command}_complete"
+    elif is_zsh; then
+        eval "_${command}_complete() {
+            if [ \"\$CURRENT\" -eq 2 ]; then
+                _files -g \"*.*(:r)\"
+            else
+                local extensions=(${default_extensions[*]})
+                _describe 'extensions' extensions
+            fi
+        }"
+        setup_completion "$command" "_${command}_complete"
+    fi
+}
+
+# Directory completion with base path
+setup_directory_completion() {
+    local command="$1"
+    local base_path_var="$2"
+
+    if is_bash; then
+        eval "_${command}_complete() {
+            local cur=\"\${COMP_WORDS[COMP_CWORD]}\"
+            local base_path=\"\${${base_path_var}%/}\"
+            mapfile -t COMPREPLY < <(cd \"\$base_path\" && compgen -d -- \"\$cur\")
+        }"
+        setup_completion "$command" "_${command}_complete"
+    elif is_zsh; then
+        eval "_${command}_complete() {
+            local base_path=\"\${${base_path_var}%/}\"
+            _files -W \"\$base_path\" -/
+        }"
+        setup_completion "$command" "_${command}_complete"
+    fi
+}

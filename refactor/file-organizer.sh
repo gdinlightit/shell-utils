@@ -80,26 +80,4 @@ EOF
     fi
 }
 
-# Shell completion (same as before)
-if is_bash; then
-    _file_organizer_complete() {
-        local cur="${COMP_WORDS[COMP_CWORD]}"
-        if [ "$COMP_CWORD" -eq 1 ]; then
-            mapfile -t COMPREPLY < <(compgen -f -- "$cur" | sed -n 's/\.[^.]*$//p' | sort -u)
-        else
-            local extensions="txt pdf doc docx jpg jpeg png gif mp3 mp4 zip"
-            mapfile -t COMPREPLY < <(compgen -W "$extensions" -- "$cur")
-        fi
-    }
-    complete -F _file_organizer_complete file-organizer
-elif is_zsh; then
-    _file_organizer_complete() {
-        if [ "$CURRENT" -eq 2 ]; then
-            _files -g "*.*(:r)"
-        else
-            local extensions=("css" "scss" "js" "tsx" "ts")
-            _describe 'extensions' extensions
-        fi
-    }
-    compdef _file_organizer_complete file-organizer
-fi
+setup_file_extension_completion "file-organizer" "css" "scss" "js" "tsx" "ts"
