@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Source the utilities file (adjust path as needed)
-# source "${HOME}/shell-utils/utils.sh"
-
 # Base path for all your projects
 export BASE_PATH="${HOME}/Desktop/work"
 

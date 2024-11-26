@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# Source the utilities file (adjust path as needed)
-# source "${HOME}/shell-utils/utils.sh"
-
 file-organizer() {
     setup_logging "file-organizer"
 
@@ -100,7 +97,7 @@ elif is_zsh; then
         if [ "$CURRENT" -eq 2 ]; then
             _files -g "*.*(:r)"
         else
-            local extensions=("txt" "pdf" "doc" "docx" "jpg" "jpeg" "png" "gif" "mp3" "mp4" "zip")
+            local extensions=("css" "scss" "js" "tsx" "ts")
             _describe 'extensions' extensions
         fi
     }

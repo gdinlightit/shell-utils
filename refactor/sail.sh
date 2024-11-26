@@ -1,7 +1,27 @@
 #!/bin/bash
 
-# Source the utilities file (adjust path as needed)
-# source "${HOME}/shell-utils/utils.sh"
+# Service health check
+wait_for_service() {
+    local url="${1:-http://localhost}"
+    local max_attempts="${2:-30}"
+    local attempt=1
+    local wait_seconds="${3:-2}"
+
+    log "INFO" "Waiting for ${url} to become available..."
+
+    while ! curl -s "${url}" >/dev/null; do
+        if [ "${attempt}" -eq "${max_attempts}" ]; then
+            log "ERROR" "Service failed to start after ${max_attempts} attempts"
+            return 1
+        fi
+        log "INFO" "Attempt ${attempt}/${max_attempts}: Service not ready yet..."
+        sleep "$wait_seconds"
+        attempt=$((attempt + 1))
+    done
+
+    log "INFO" "Service is available!"
+    return 0
+}
 
 sail-init() {
     # Setup logging

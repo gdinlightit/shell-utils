@@ -4,13 +4,24 @@
 UTILS_LOG_DIR="${HOME}/.logs/shell-utils"
 mkdir -p "$UTILS_LOG_DIR"
 
+cleanup_old_logs() {
+    local days_to_keep="${1:-30}"
+    log "INFO" "Cleaning up logs older than $days_to_keep days"
+    find "$UTILS_LOG_DIR" -type f -name "*.log" -mtime "+${days_to_keep}" -delete
+}
+
 setup_logging() {
     local script_name="$1"
-    LOG_FILE="${UTILS_LOG_DIR}/${script_name}_$(date +%Y%m%d_%H%M%S).log"
+
     local LOG_FILE
-    exec 1> >(tee -a "$LOG_FILE")
-    exec 2> >(tee -a "$LOG_FILE" >&2)
-    echo "$LOG_FILE"
+    LOG_FILE="${UTILS_LOG_DIR}/${script_name}_$(date +%Y%m%d_%H%M%S).log"
+
+    exec 1> >(tee -ia "${LOG_FILE}")
+    exec 2> >(tee -ia "${LOG_FILE}" >&2)
+    log "DEBUG" "Logging to file $LOG_FILE"
+
+    # Cleanup old logs when setting up new logging
+    cleanup_old_logs 30
 }
 
 log() {
@@ -31,29 +42,6 @@ validate_path() {
         log "ERROR" "Path cannot contain backslashes"
         return 1
     fi
-}
-
-# Service health check
-wait_for_service() {
-    local url="${1:-http://localhost}"
-    local max_attempts="${2:-30}"
-    local attempt=1
-    local wait_seconds="${3:-2}"
-
-    log "INFO" "Waiting for ${url} to become available..."
-
-    while ! curl -s "${url}" >/dev/null; do
-        if [ "${attempt}" -eq "${max_attempts}" ]; then
-            log "ERROR" "Service failed to start after ${max_attempts} attempts"
-            return 1
-        fi
-        log "INFO" "Attempt ${attempt}/${max_attempts}: Service not ready yet..."
-        sleep "$wait_seconds"
-        attempt=$((attempt + 1))
-    done
-
-    log "INFO" "Service is available!"
-    return 0
 }
 
 # Safe command execution
