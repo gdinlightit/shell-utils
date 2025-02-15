@@ -37,17 +37,17 @@ EOF
     local project_path="${BASE_PATH}/${1}"
 
     if [ ! -d "$project_path" ]; then
-        log "ERROR" "Directory does not exist: $project_path"
+        log "ERROR" "❌ Directory does not exist: $project_path"
         return 1
     fi
 
-    log "INFO" "Opening VSCode in: $project_path"
-    if ! safe_exec "nohup code '$project_path' >/dev/null 2>&1 &" "Failed to launch VSCode"; then
+    log "INFO" "🚀 Opening VSCode in: $project_path"
+    if ! safe_exec "nohup code '$project_path' >/dev/null 2>&1 &" "❌ Failed to launch VSCode"; then
         return 1
     fi
     disown %?code
 
-    log "INFO" "VSCode launched successfully"
+    log "INFO" "✅ VSCode launched successfully"
 
     if $close_terminal; then
         log "INFO" "Closing terminal..."
