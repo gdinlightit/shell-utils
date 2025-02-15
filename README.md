@@ -141,17 +141,16 @@ export BASE_PATH="/path/to/your/projects"
 
 ```bash
 # Add to ~/.bashrc or ~/.zshrc
-source "${HOME}/shell-utils/utils.sh"
-source "${HOME}/shell-utils/work.sh"
-source "${HOME}/shell-utils/auto-nvm.sh"
-source "${HOME}/shell-utils/sail.sh"
-source "${HOME}/shell-utils/file-organizer.sh"
+source "${HOME}/shell-utils/src/utils.sh"
+source "${HOME}/shell-utils/src/work.sh"
+source "${HOME}/shell-utils/src/auto-nvm.sh"
+...
 ```
 
 or
 
 ```bash
-source "${HOME}/shell-utils/{utils,auto-nvm,work}.sh"
+eval "source ${HOME}/shell-utils/src/{utils,auto-nvm,work,...}.sh"
 ```
 
 4. Create the logs directory:
