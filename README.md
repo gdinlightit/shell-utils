@@ -10,11 +10,11 @@ Quickly open VS Code in your project directories with smart tab completion.
 
 #### Features
 
-- Opens VS Code in workspace directories under a configured base path
-- Tab completion for available project folders
-- Directory existence validation
-- Compatible with both bash and zsh
-- Optional terminal auto-close after launching VS Code
+-   Opens VS Code in workspace directories under a configured base path
+-   Tab completion for available project folders
+-   Directory existence validation
+-   Compatible with both bash and zsh
+-   Optional terminal auto-close after launching VS Code
 
 #### Usage
 
@@ -36,12 +36,12 @@ Automates the creation and initial setup of Laravel projects using Laravel Sail.
 
 #### Features
 
-- Creates new Laravel project with Sail
-- Starts Docker containers automatically
-- Smart health checking for application readiness
-- Runs initial database migrations
-- Provides helpful feedback and progress indicators
-- Maximum 60-second timeout for startup
+-   Creates new Laravel project with Sail
+-   Starts Docker containers automatically
+-   Smart health checking for application readiness
+-   Runs initial database migrations
+-   Provides helpful feedback and progress indicators
+-   Maximum 60-second timeout for startup
 
 #### Usage
 
@@ -69,11 +69,11 @@ Organizes files with the same base name and different extensions into a dedicate
 
 #### Features
 
-- Moves files with specified base name and extensions into a new directory
-- Comprehensive error handling and input validation
-- Detailed logging to both console and log file
-- Compatible with both bash and zsh
-- Production-level script with best practices
+-   Moves files with specified base name and extensions into a new directory
+-   Comprehensive error handling and input validation
+-   Detailed logging to both console and log file
+-   Compatible with both bash and zsh
+-   Production-level script with best practices
 
 #### Usage
 
@@ -96,6 +96,33 @@ The script will:
 5. Clean up empty directories if no files were moved
 6. Provide detailed feedback of all operations
 
+### 4. `auto-nvm.sh` - Automatic Node Version Manager
+
+Automatically switches Node.js versions when changing directories based on `.nvmrc` files.
+
+#### Features
+
+-   Automatically detects `.nvmrc` files in project directories
+-   Switches Node.js version when changing directories
+-   Installs required Node.js version if not present
+-   Falls back to default version when leaving a project directory
+-   Compatible with zsh shell
+-   Integrates with nvm (Node Version Manager)
+
+#### Usage
+
+The functionality is automatic after installation. Simply:
+
+```bash
+cd your-project  # Auto-switches to Node version in .nvmrc
+cd ..            # Auto-switches back to default Node version
+```
+
+Requirements:
+
+-   zsh shell
+-   nvm (Node Version Manager) installed and initialized
+
 ## Installation
 
 1. Clone the repository to the shell utilities directory:
@@ -116,8 +143,15 @@ export BASE_PATH="/path/to/your/projects"
 # Add to ~/.bashrc or ~/.zshrc
 source "${HOME}/shell-utils/utils.sh"
 source "${HOME}/shell-utils/work.sh"
+source "${HOME}/shell-utils/auto-nvm.sh"
 source "${HOME}/shell-utils/sail.sh"
 source "${HOME}/shell-utils/file-organizer.sh"
+```
+
+or
+
+```bash
+source "${HOME}/shell-utils/{utils,auto-nvm,work}.sh"
 ```
 
 4. Create the logs directory:
