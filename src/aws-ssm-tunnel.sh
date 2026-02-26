@@ -29,10 +29,10 @@ aws-ssm-tunnel() {
         --region "$region"
 }
 
+_AWS_SSM_TUNNEL_ENV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)/.."
+
 _aws_ssm_tunnel_complete() {
-    local script_dir
-    script_dir="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
-    local env_dir="${script_dir}/.."
+    local env_dir="${_AWS_SSM_TUNNEL_ENV_DIR}"
     local projects=()
     for f in "${env_dir}"/.env.*; do
         [[ -f "$f" ]] && projects+=("$(basename "$f" | sed 's/^\.env\.//')")
