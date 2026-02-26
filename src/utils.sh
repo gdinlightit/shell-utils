@@ -139,3 +139,16 @@ setup_directory_completion() {
         setup_completion "$command" "_${command}_complete"
     fi
 }
+
+load-env() {
+    local filename="${1:-.env}"
+    local caller_dir
+    caller_dir="$(cd "$(dirname "${BASH_SOURCE[1]:-$0}")" && pwd)"
+    local env_file="${caller_dir}/../${filename}"
+
+    if [[ -f "$env_file" ]]; then
+        source "$env_file"
+    else
+        log "WARNING" "No .env file found at: $env_file"
+    fi
+}
