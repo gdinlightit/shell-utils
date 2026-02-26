@@ -143,7 +143,12 @@ setup_directory_completion() {
 load-env() {
     local filename="${1:-.env}"
     local caller_dir
-    caller_dir="$(cd "$(dirname "${BASH_SOURCE[1]:-$0}")" && pwd)"
+    if is_bash; then
+        caller_dir="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
+    elif is_zsh; then
+        # funcfiletrace[1] = "filepath:lineno" of the call site
+        caller_dir="$(cd "$(dirname "${funcfiletrace[1]%:*}")" && pwd)"
+    fi
     local env_file="${caller_dir}/../${filename}"
 
     if [[ -f "$env_file" ]]; then
