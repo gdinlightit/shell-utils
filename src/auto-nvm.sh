@@ -1,10 +1,5 @@
 #!/usr/bin/env zsh
 
-if ! is_zsh; then
-    echo "This script requires zsh"
-    return 1
-fi
-
 autoload -U add-zsh-hook
 load-nvmrc() {
     local nvmrc_path="$(nvm_find_nvmrc)"
