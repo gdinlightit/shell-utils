@@ -140,6 +140,33 @@ setup_directory_completion() {
     fi
 }
 
+# Secret resolution: 1Password CLI first, macOS Keychain as fallback.
+# Usage: get-secret <name>   (prints the secret to stdout; returns 1 if not found anywhere)
+# Set SECRETS_DEBUG=1 to log (to stderr) which backend served the secret.
+get-secret() {
+    local name="${1:?Usage: get-secret <name>}"
+    local value
+
+    value="$(op read "op://Private/${name}/password" 2>/dev/null)"
+    if [[ -n "$value" ]]; then
+        [[ -n "$SECRETS_DEBUG" ]] && log "DEBUG" "get-secret: served '${name}' from 1Password" >&2
+        printf '%s' "$value"
+        return 0
+    fi
+
+    value="$(security find-generic-password -s "$name" -a "$USER" -w 2>/dev/null)"
+    if [[ -n "$value" ]]; then
+        [[ -n "$SECRETS_DEBUG" ]] && log "DEBUG" "get-secret: served '${name}' from macOS Keychain (fallback)" >&2
+        printf '%s' "$value"
+        return 0
+    fi
+
+    log "ERROR" "Secret '${name}' not found in 1Password or Keychain" >&2
+    log "INFO" "Add it to 1Password with: op item create --category=password --title=\"${name}\" --vault=Private password=\"<value>\"" >&2
+    log "INFO" "Or add it to Keychain with: security add-generic-password -s \"${name}\" -a \"\$USER\" -w \"<value>\"" >&2
+    return 1
+}
+
 load-env() {
     local filename="${1:-.env}"
     local caller_dir
