@@ -96,7 +96,35 @@ The script will:
 5. Clean up empty directories if no files were moved
 6. Provide detailed feedback of all operations
 
-### 4. `auto-nvm.sh` - Automatic Node Version Manager
+### 4. `get-secret` (in `utils.sh`) - Secret Resolution Helper
+
+Resolves a named secret for scripts that need API tokens or service credentials
+(e.g. `cf-tunnel.sh`).
+
+#### Resolution order
+
+1. **1Password CLI** — `op read "op://Private/<name>/password"`
+2. **macOS Keychain** (fallback) — `security find-generic-password -s "<name>" -a "$USER" -w`
+
+If neither backend has the secret, it prints setup instructions for both and returns 1.
+Set `SECRETS_DEBUG=1` to log (to stderr) which backend served a given secret; the happy
+path is otherwise silent so it stays script-composable (`token="$(get-secret NAME)"`).
+
+#### Migrating existing Keychain secrets to 1Password
+
+Run once, interactively, by hand:
+
+```bash
+./bin/migrate-secrets-to-1password.sh
+```
+
+It requires the 1Password desktop app's CLI integration to be enabled (Settings ->
+Developer -> "Integrate with 1Password CLI"), reads known secrets out of Keychain, and
+creates/updates matching items in the `Private` vault. It never prints secret values.
+Existing scripts need no further changes — `get-secret` picks up 1Password automatically
+once the item exists, and still falls back to Keychain for anything not yet migrated.
+
+### 5. `auto-nvm.sh` - Automatic Node Version Manager
 
 Automatically switches Node.js versions when changing directories based on `.nvmrc` files.
 
