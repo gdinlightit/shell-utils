@@ -112,17 +112,29 @@ path is otherwise silent so it stays script-composable (`token="$(get-secret NAM
 
 #### Migrating existing Keychain secrets to 1Password
 
-Run once, interactively, by hand:
+`secret-migrate` (also in `utils.sh`) migrates one or more named secrets from Keychain
+into 1Password. Run it interactively, by hand, whenever you need to migrate something:
 
 ```bash
-./bin/migrate-secrets-to-1password.sh
+secret-migrate CLICKUP_API_TOKEN SLITE_API_TOKEN
 ```
 
+Or use the bin wrapper, which just passes its arguments straight through:
+
+```bash
+./bin/migrate-secrets-to-1password.sh CLICKUP_API_TOKEN SLITE_API_TOKEN cf-tunnel-tshallandale-prod-id cf-tunnel-tshallandale-prod-secret cf-tunnel-tshallandale-stg-id cf-tunnel-tshallandale-stg-secret
+```
+
+(those six were this repo's original known secrets — just an example, not a hardcoded
+list anymore). For a one-off future token, just call `secret-migrate MY_NEW_TOKEN`
+straight from the shell.
+
 It requires the 1Password desktop app's CLI integration to be enabled (Settings ->
-Developer -> "Integrate with 1Password CLI"), reads known secrets out of Keychain, and
-creates/updates matching items in the `Private` vault. It never prints secret values.
-Existing scripts need no further changes — `get-secret` picks up 1Password automatically
-once the item exists, and still falls back to Keychain for anything not yet migrated.
+Developer -> "Integrate with 1Password CLI"), reads each named secret out of Keychain,
+and creates/updates a matching item in the `Private` vault. It never prints secret
+values. Existing scripts need no further changes — `get-secret` picks up 1Password
+automatically once the item exists, and still falls back to Keychain for anything not
+yet migrated.
 
 ### 5. `auto-nvm.sh` - Automatic Node Version Manager
 

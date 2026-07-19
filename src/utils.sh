@@ -167,6 +167,77 @@ get-secret() {
     return 1
 }
 
+# Migrate one or more secrets from macOS Keychain into 1Password (Private vault).
+# Usage: secret-migrate <name> [<name>...]
+# For each name: reads it from Keychain, then creates or updates a matching
+# 1Password item (category=password, vault=Private, value in the `password` field).
+# Never prints secret values. Requires the 1Password CLI to be integrated with the
+# desktop app (Settings -> Developer -> "Integrate with 1Password CLI").
+secret-migrate() {
+    if [[ $# -eq 0 ]]; then
+        echo "Usage: secret-migrate <name> [<name>...]" >&2
+        echo "  Reads each name from macOS Keychain and creates/updates a matching" >&2
+        echo "  1Password item (Private vault, password field). Never prints values." >&2
+        echo "Example (one-off future tokens, straight from the shell):" >&2
+        echo "  secret-migrate CLICKUP_API_TOKEN SLITE_API_TOKEN cf-tunnel-tshallandale-prod-id cf-tunnel-tshallandale-prod-secret cf-tunnel-tshallandale-stg-id cf-tunnel-tshallandale-stg-secret" >&2
+        return 1
+    fi
+
+    local vault="Private"
+
+    echo "Checking 1Password CLI access..."
+    if ! op account list >/dev/null 2>&1; then
+        log "ERROR" "'op account list' failed. The 1Password CLI is not integrated with your desktop app." >&2
+        log "INFO" "Enable it in the 1Password app: Settings -> Developer -> \"Integrate with 1Password CLI\", then re-run." >&2
+        return 1
+    fi
+    echo "1Password CLI OK."
+    echo
+
+    local created=() updated=() skipped=()
+    local name value
+
+    for name in "$@"; do
+        echo "==> ${name}"
+
+        value="$(security find-generic-password -s "$name" -a "$USER" -w 2>/dev/null || true)"
+        if [[ -z "$value" ]]; then
+            echo "    skip: not found in Keychain (service: ${name}, account: ${USER})"
+            skipped+=("$name")
+            continue
+        fi
+
+        if op item get "$name" --vault "$vault" >/dev/null 2>&1; then
+            if op item edit "$name" --vault "$vault" "password=${value}" >/dev/null 2>&1; then
+                echo "    updated existing 1Password item"
+                updated+=("$name")
+            else
+                echo "    ERROR: failed to update 1Password item" >&2
+                skipped+=("$name")
+            fi
+        else
+            if op item create --category=password --title="$name" --vault="$vault" "password=${value}" >/dev/null 2>&1; then
+                echo "    created new 1Password item"
+                created+=("$name")
+            else
+                echo "    ERROR: failed to create 1Password item" >&2
+                skipped+=("$name")
+            fi
+        fi
+
+        unset value
+    done
+
+    echo
+    echo "=== Summary ==="
+    echo "Created (${#created[@]}): ${created[*]:-none}"
+    echo "Updated (${#updated[@]}): ${updated[*]:-none}"
+    echo "Skipped (${#skipped[@]}): ${skipped[*]:-none}"
+    echo
+    echo "Note: no secret values were printed above. Verify with, e.g.:"
+    echo "  op read \"op://${vault}/<name>/password\" | wc -c"
+}
+
 load-env() {
     local filename="${1:-.env}"
     local caller_dir
