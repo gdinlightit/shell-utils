@@ -13,17 +13,13 @@ cf-tunnel() {
     local keychain_secret="${CF_TUNNEL_KEYCHAIN_SECRET:?CF_TUNNEL_KEYCHAIN_SECRET is not set}"
 
     local token_id token_secret
-    token_id="$(security find-generic-password -s "$keychain_id" -a "$USER" -w 2>/dev/null)"
-    if [[ -z "$token_id" ]]; then
-        log "ERROR" "Service token ID not found in Keychain (service: ${keychain_id})"
-        log "INFO" "Add it with: security add-generic-password -s \"${keychain_id}\" -a \"\$USER\" -w \"<your-token-id>\""
+    if ! token_id="$(get-secret "$keychain_id")"; then
+        log "ERROR" "Could not resolve service token ID (name: ${keychain_id})"
         return 1
     fi
 
-    token_secret="$(security find-generic-password -s "$keychain_secret" -a "$USER" -w 2>/dev/null)"
-    if [[ -z "$token_secret" ]]; then
-        log "ERROR" "Service token secret not found in Keychain (service: ${keychain_secret})"
-        log "INFO" "Add it with: security add-generic-password -s \"${keychain_secret}\" -a \"\$USER\" -w \"<your-token-secret>\""
+    if ! token_secret="$(get-secret "$keychain_secret")"; then
+        log "ERROR" "Could not resolve service token secret (name: ${keychain_secret})"
         return 1
     fi
 
