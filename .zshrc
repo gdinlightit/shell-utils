@@ -143,7 +143,7 @@ eval "$(direnv hook zsh)"
 if [[ "$TERM_PROGRAM" == "vscode" && -z "$TMUX" ]] && command -v tmux >/dev/null; then
   session_name="${PWD##*/}"
   session_name="${session_name:-root}"
-  exec tmux new-session -s "${session_name}-${$}"
+  exec tmux new-session -A -s "$session_name" \; new-window
 fi
 
 # Kiro CLI post block. Keep at the bottom of this file.
