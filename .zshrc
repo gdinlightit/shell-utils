@@ -143,10 +143,10 @@ eval "$(direnv hook zsh)"
 if [[ "$TERM_PROGRAM" == "vscode" && -z "$TMUX" ]] && command -v tmux >/dev/null; then
   session_name="${PWD##*/}"
   session_name="${session_name:-root}"
-  exec tmux new-session -s "${session_name}-${$}"
+  tmux new-session -d -s "$session_name" 2>/dev/null
+  idx=$(tmux new-window -P -F "#{window_index}" -d -t "$session_name" 2>/dev/null || echo "0")
+  exec tmux attach-session -t "$session_name" \; select-window -t ":${idx}"
 fi
-
-alias tmux-clean="tmux list-sessions -F '#{session_name}' | while read s; do pid=\${s##*-}; [ \"\$pid\" != \"\$s\" ] && ! kill -0 \"\$pid\" 2>/dev/null && tmux kill-session -t \"\$s\" 2>/dev/null; done"
 
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
