@@ -144,8 +144,8 @@ if [[ "$TERM_PROGRAM" == "vscode" && -z "$TMUX" ]] && command -v tmux >/dev/null
   session_name="${PWD##*/}"
   session_name="${session_name:-root}"
   tmux new-session -d -s "$session_name" 2>/dev/null
-  tmux new-window -t "$session_name" 2>/dev/null
-  exec tmux attach-session -t "$session_name"
+  target_window=$(tmux new-window -P -F "#{window_index}" -t "$session_name" 2>/dev/null || echo "0")
+  exec tmux attach-session -t "$session_name" \; select-window -t "${target_window:-0}"
 fi
 
 # Kiro CLI post block. Keep at the bottom of this file.
