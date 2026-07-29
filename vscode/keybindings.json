@@ -1,0 +1,27 @@
+// Place your key bindings in this file to override the defaults
+[
+  {
+    "key": "shift+cmd+c",
+    "command": "extension.changeCase.camel"
+  },
+  {
+    "key": "cmd+q",
+    "command": "-workbench.action.quit"
+},
+{
+    "key": "shift+enter",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+        "text": "\u001b\r"
+    },
+    "when": "terminalFocus"
+},
+{
+    "key": "ctrl+alt+w",
+    "command": "workbench.action.terminal.sendSequence",
+    "args": {
+        "text": "tmux kill-session ; exit\r"
+    },
+    "when": "terminalFocus"
+}
+]

@@ -1,0 +1,218 @@
+{
+  "editor.fontSize": 12,
+  "editor.fontFamily": "Hack Nerd Font, Menlo, Monaco, 'Courier New', monospace",
+  "terminal.integrated.fontLigatures": true,
+  "terminal.integrated.fontFamily": "Hack Nerd Font Mono",
+  "terminal.integrated.tabs.title": "${sequence}",
+
+  "security.workspace.trust.untrustedFiles": "open",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.shellcheck": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit",
+  },
+  "shellcheck.run": "onSave",
+  "cSpell.userWords": [
+    "claudesync",
+    "Flugg",
+    "Laravel",
+    "Lightit",
+    "logbody",
+    "shellcheck",
+    "Spatie",
+    "wraplog",
+  ],
+  "cSpell.ignorePaths": ["my-dev-scripts/**"],
+  "editor.formatOnSave": true,
+  "markdownlint.config": {
+    "MD013": false,
+    "list-marker-space": {
+      "ul_multi": 3,
+      "ul_single": 3,
+    },
+    "ul-indent": {
+      "indent": 4,
+    },
+    "MD046": {
+      "style": "fenced",
+    },
+    "ol-prefix": false,
+  },
+  "editor.minimap.enabled": false,
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "[shellscript]": {
+    "files.eol": "\n",
+  },
+  "explorer.confirmDragAndDrop": false,
+  "bladeFormatter.format.sortTailwindcssClasses": true,
+  "editor.quickSuggestions": {
+    "strings": "on",
+  },
+  "tailwindCSS.emmetCompletions": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "explorer.confirmDelete": false,
+  "security.promptForLocalFileProtocolHandling": false,
+  "deepsource.installationUrl": "https://app.deepsource.com",
+  "eslint.useFlatConfig": true,
+  "eslint.options": {
+    "overrideConfigFile": "/Users/guidodinello/eslint-env/eslint.config.js",
+  },
+  "eslint.enable": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact",
+  ],
+  "[markdown]": {
+    "editor.defaultFormatter": "DavidAnson.vscode-markdownlint",
+  },
+  "[php]": {
+    "editor.defaultFormatter": "bmewburn.vscode-intelephense-client",
+  },
+  "[html]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features",
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "sonarlint.rules": {
+    "javascript:S6774": {
+      "level": "on",
+    },
+    "typescript:S6851": {
+      "level": "off",
+    },
+  },
+  "sonarlint.pathToNodeExecutable": "/Users/guidodinello/.nvm/versions/node/v23.1.0/bin/node",
+
+  "terminal.integrated.inheritEnv": true,
+  "php.executablePath": "php",
+  "phpstan.binCommand": ["./vendor/bin/sail", "php", "vendor/bin/phpstan"],
+  "phpstan.tmpDir": "var/cache/phpstan",
+  "php.problems.exclude": {
+    "**/.git/**": true,
+    "**/vendor/**": true,
+    "**/node_modules/**": true,
+  },
+
+  "workbench.sideBar.location": "right",
+  "githubPullRequests.pullBranch": "never",
+  "githubPullRequests.terminalLinksHandler": "github",
+  "shellcheck.ignorePatterns": {
+    "**/*.env*": true,
+  },
+  "Laravel.phpEnvironment": "sail",
+  "editor.rulers": [80, 120],
+  "files.associations": {
+    "*.css": "tailwindcss",
+  },
+  "[svelte]": {
+    "editor.defaultFormatter": "svelte.svelte-vscode",
+  },
+  "update.showReleaseNotes": false,
+
+  "php.validate.enable": true,
+  "php.suggest.basic": true,
+
+  "php.inlayHints.parameters.enabled": false,
+  "php.inlayHints.types.variable": false,
+  "php.inlayHints.types.lambdaParameter": false,
+  "php.inlayHints.types.return": false,
+  "php.inlayHints.parameters.byReference": false,
+
+  "php.format.rules.addCommaAfterLastArrayElement": true,
+  "php.format.rules.addCommaAfterLastCallParameter": true,
+  "php.format.rules.addCommaAfterLastDeclParameter": true,
+  "php.format.rules.spaceAfterCast": true,
+
+  "diffEditor.ignoreTrimWhitespace": false,
+  "sonarlint.focusOnNewCode": false,
+  "application.shellEnvironmentResolutionTimeout": 20,
+  "sonarlint.connectedMode.connections.sonarqube": [
+    {
+      "serverUrl": "https://sonarqube.lightitlabs.com",
+      "connectionId": "sonarqube-lightitlabs",
+    },
+  ],
+  "sonarlint.automaticAnalysis": true,
+  "gitlens.ai.model": "vscode",
+  "gitlens.ai.vscode.model": "copilot:gpt-4.1",
+  "cSpell.customDictionaries": {
+    "custom-dictionary-user": {
+      "name": "custom-dictionary-user",
+      "path": "~/.cspell/custom-dictionary-user.txt",
+      "addWords": true,
+      "scope": "user",
+    },
+  },
+  "snyk.advanced.cliPath": "/Users/guidodinello/Library/Application Support/snyk/vscode-cli/snyk-macos-arm64",
+  "snyk.securityAtInception.autoConfigureSnykMcpServer": true,
+  "snyk.securityAtInception.executionFrequency": "On Code Generation",
+  "snyk.yesWelcomeNotification": false,
+  "snyk.trustedFolders": ["/Users/guidodinello/Desktop/work/elladx"],
+  "claudeCode.preferredLocation": "panel",
+  "claudeCode.useTerminal": true,
+  "explorer.fileNesting.patterns": {
+    "*.ts": "${capture}.js",
+    "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
+    "*.jsx": "${capture}.js",
+    "*.tsx": "${capture}.ts",
+    "tsconfig.json": "tsconfig.*.json",
+    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock",
+    "*.sqlite": "${capture}.${extname}-*",
+    "*.db": "${capture}.${extname}-*",
+    "*.sqlite3": "${capture}.${extname}-*",
+    "*.db3": "${capture}.${extname}-*",
+    "*.sdb": "${capture}.${extname}-*",
+    "*.s3db": "${capture}.${extname}-*",
+  },
+  "chat.viewSessions.orientation": "stacked",
+  "terminal.integrated.allowedLinkSchemes": [
+    "file",
+    "http",
+    "https",
+    "mailto",
+    "vscode",
+    "vscode-insiders",
+    "\"https",
+  ],
+  "python.analysis.typeCheckingMode": "standard",
+  "python.languageServer": "Pylance",
+  "workbench.colorTheme": "Dark+",
+  "terminal.integrated.enableMultiLinePasteWarning": "never",
+  "redhat.telemetry.enabled": false,
+  "editor.accessibilitySupport": "off",
+  "docker.extension.enableComposeLanguageServer": false,
+  "yaml.disableSchemaDetection": [
+    "**/.github/workflows/*.yml",
+    "**/.github/workflows/*.yaml",
+    "**/.gitea/workflows/*.yml",
+    "**/.gitea/workflows/*.yaml",
+    "**/.forgejo/workflows/*.yml",
+    "**/.forgejo/workflows/*.yaml",
+  ],
+  "git.autofetch": true,
+  "git.openRepositoryInParentFolders": "always",
+}

@@ -163,6 +163,67 @@ Requirements:
 -   zsh shell
 -   nvm (Node Version Manager) installed and initialized
 
+### 6. tmux + VSCode terminal integration
+
+Keeps tmux window names in sync with VSCode integrated-terminal tab titles,
+persists sessions/windows/pane layout across reboots, and gives you an
+explicit way to end a tmux session from a tab (without that also happening
+when VSCode just closes normally or crashes).
+
+#### How it works
+
+-   **Name sync (tmux → VSCode tab)**: `.tmux.conf` sets `set-titles on` /
+    `set-titles-string '#W'`, which makes tmux push the current window's name
+    into the terminal's OSC title sequence any time you rename a window
+    (`ctrl-b ,`) or switch windows. `vscode/settings.json` sets
+    `"terminal.integrated.tabs.title": "${sequence}"`, which makes the VSCode
+    tab title just follow that OSC sequence. One rename (`ctrl-b ,`) updates
+    both — there's no reverse direction (VSCode → tmux), since VSCode has no
+    hook into a shell it doesn't control.
+
+-   **Persistence across reboots**: `.tmux.conf` loads two TPM plugins,
+    `tmux-resurrect` and `tmux-continuum`. Continuum autosaves the full
+    session/window/pane layout (including names) every 15 minutes
+    (`@continuum-save-interval 15`) and auto-restores it the next time the
+    tmux server starts (`@continuum-restore on`), including captured pane
+    contents (`@resurrect-capture-pane-contents on`). Without this, a fresh
+    tmux server after a reboot has no memory of prior session/window names.
+
+-   **Explicit "kill session" action**: closing a VSCode terminal tab (trash
+    icon, `cmd+w`, the whole window closing, or VSCode crashing) all just
+    close the tab's pty, which sends the shell/`tmux attach` client a
+    `SIGHUP`. tmux's default behavior on `SIGHUP` is to **detach**, not kill —
+    which is the whole point of using tmux here (the session survives VSCode
+    closing for any reason). Since there's no reliable way to tell "user
+    explicitly closed this one tab" apart from "the app is closing/crashing"
+    at that layer, killing a session on purpose is a **separate, deliberate**
+    keybinding instead of overloading the default close gesture:
+    `vscode/keybindings.json` binds `ctrl+alt+w` (while a terminal has focus)
+    to send `tmux kill-session ; exit` to the shell — ends the current tmux
+    session and closes the tab in one action. Every other close path is
+    untouched and still just detaches.
+
+#### Replicating on a new machine
+
+1. Symlink (or copy) `.tmux.conf` per the steps above (already covered by
+   `setup.sh`).
+2. Install [TPM](https://github.com/tmux-plugins/tpm) and the plugins it
+   declares:
+
+    ```bash
+    git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+    tmux new-session -d -s _tpm_setup -c ~ \
+      && tmux run-shell -t _tpm_setup '~/.tmux/plugins/tpm/scripts/install_plugins.sh' \
+      && tmux kill-session -t _tpm_setup
+    ```
+
+3. Copy `vscode/settings.json` and `vscode/keybindings.json` into
+   `~/Library/Application Support/Code/User/` (merge by hand if you already
+   have customizations there — these are snapshots of one machine's config,
+   not meant to be blindly overwritten).
+4. Reload the VSCode window (`Cmd+Shift+P` → "Reload Window") to pick up the
+   new keybinding and terminal setting.
+
 ## Installation
 
 1. Clone the repository to the shell utilities directory:
