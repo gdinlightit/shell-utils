@@ -153,3 +153,4 @@ alias tmux-clean="tmux list-sessions -F '#{session_name}' | while read s; do cas
 
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
+export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
