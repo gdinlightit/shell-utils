@@ -104,7 +104,7 @@ if command -v ngrok &>/dev/null; then
 fi
 
 # my aliases
-files=("${HOME}/Desktop/work/aliases/src/"{utils,work,auto-nvm,auto-pvm,sail,file-organizer,aws-ssm-tunnel,cf-tunnel}".sh")
+files=("${HOME}/Desktop/work/aliases/src/"{utils,work,auto-nvm,auto-pvm,sail,file-organizer,aws-ssm-tunnel,cf-tunnel,lidwork}".sh")
 for file in "${files[@]}"; do
   source "$file"
 done
