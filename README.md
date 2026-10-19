@@ -224,6 +224,24 @@ when VSCode just closes normally or crashes).
 4. Reload the VSCode window (`Cmd+Shift+P` → "Reload Window") to pick up the
    new keybinding and terminal setting.
 
+### 7. `bin/move-repo.sh` - Move a repo without breaking tool state
+
+Moves a git repo to another folder and updates everything that stores its absolute path:
+
+- Claude Code: the project folder (transcripts, memory), `~/.claude.json` and prompt history
+- Orca's repo registration (skipped while Orca is running, since Orca would overwrite it; re-add the repo in Orca instead)
+- Python `.venv` folders, rebuilt with `uv sync`
+- direnv approval and git worktrees
+
+Engram needs nothing: it names projects after the git remote, not the folder.
+
+```bash
+./bin/move-repo.sh ~/Desktop/work/my-repo ~/Desktop/work/personal             # dry run
+DRY_RUN=0 ./bin/move-repo.sh ~/Desktop/work/my-repo ~/Desktop/work/personal   # apply
+```
+
+Run it from outside the repo. It refuses while any process (shell, Claude session, dev server) has its working directory inside the repo, so agents in other projects can keep running. Everything it edits is backed up first to `~/.local/state/move-repo/`.
+
 ## Installation
 
 1. Clone the repository to the shell utilities directory:
