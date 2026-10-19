@@ -231,6 +231,7 @@ Moves a git repo to another folder and updates everything that stores its absolu
 - Claude Code: the project folder (transcripts, memory), `~/.claude.json` and prompt history
 - Orca's repo registration (skipped while Orca is running, since Orca would overwrite it; re-add the repo in Orca instead)
 - Python `.venv` folders, rebuilt with `uv sync`
+- `node_modules` folders, reinstalled with the repo's package manager (pnpm, bun, yarn or npm, picked by lockfile), since pnpm's `.bin` shims store absolute paths. A failed install is reported as a warning at the end instead of stopping the move
 - direnv approval and git worktrees
 
 Engram needs nothing: it names projects after the git remote, not the folder.
