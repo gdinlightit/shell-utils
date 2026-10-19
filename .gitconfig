@@ -1,0 +1,52 @@
+[user]
+	name = Guido Dinello
+	email = guido.dinello@lightit.io
+	signingkey = BF7B4E5AB5A9B2A8
+[core]
+	autocrlf = input
+	pager = cat
+	excludesfile = /Users/guidodinello/.gitignore_global
+[merge]
+	tool = vscode
+[mergetool "vscode"]
+	cmd = code --wait --merge $REMOTE $LOCAL $BASE $MERGED
+[diff]
+	tool = vscode
+[difftool "vscode"]
+	cmd = code --wait --diff $LOCAL $REMOTE
+[init]
+	defaultBranch = main
+[pager]
+	diff = less -FX
+[commit]
+	gpgsign = true
+[push]
+	autoSetupRemote = true
+[safe]
+	directory = /var/www/html
+[alias]
+	pull-force = "!f() { echo \"⚠️  This will discard ALL local changes. Continue? (y/N)\"; read -r response; if [[ \"$response\" =~ ^[Yy]$ ]]; then git fetch ${1:-origin} && git reset --hard ${1:-origin}/$(git branch --show-current); else echo \"Aborted.\"; fi; }; f"
+	copy-staged = "!git diff --staged --name-only | while read file; do echo \"=== $file ===\"; git show :\"$file\"; echo; done"
+	updatedate = rebase --committer-date-is-author-date --ignore-date
+	comimt = commit
+	commti = commit
+	checkou = checkout
+	checkotu = checkout
+	cehckout = checkout
+	chcekout = checkout
+	reabse = rebase
+	puhs = push
+	psuh = push
+	pus = push
+	branhc = branch
+[filter "lfs"]
+	required = true
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+[url "git@github.com-personal:guidodinello/"]
+	insteadOf = git@github.com:guidodinello/
+	insteadOf = https://github.com/guidodinello/
+# Must stay last so it overrides [user] above.
+[includeIf "gitdir:~/Desktop/work/personal/"]
+	path = ~/.gitconfig-personal

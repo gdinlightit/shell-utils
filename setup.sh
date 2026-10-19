@@ -5,7 +5,7 @@ REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
 
 link() {
   local src="$REPO_DIR/$1"
-  local dst="$HOME/$1"
+  local dst="$HOME/${2:-$1}"
   if [[ -L "$dst" ]]; then
     echo "  already symlinked: $1"
   elif [[ -f "$dst" ]]; then
@@ -22,4 +22,8 @@ link() {
 echo "Linking dotfiles from $REPO_DIR → $HOME"
 link ".zshrc"
 link ".tmux.conf"
+link ".gitconfig"
+link ".gitconfig-personal"
+link "personal.envrc" "Desktop/work/personal/.envrc"
+command -v direnv >/dev/null && direnv allow "$HOME/Desktop/work/personal"
 echo "Done."
