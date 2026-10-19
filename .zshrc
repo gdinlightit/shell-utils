@@ -93,6 +93,10 @@ case ":$PATH:" in
 esac
 # pnpm end
 
+# railway
+export RAILWAY_HOME="$HOME/.railway"
+[[ -d "$RAILWAY_HOME/bin" ]] && export PATH="$RAILWAY_HOME/bin:$PATH"
+
 [[ -e ~/.phpbrew/bashrc ]] && source ~/.phpbrew/bashrc
 
 source /opt/homebrew/share/powerlevel10k/powerlevel10k.zsh-theme
