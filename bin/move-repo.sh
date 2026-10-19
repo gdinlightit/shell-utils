@@ -2,7 +2,8 @@
 #
 # Move a local git repo to another folder and fix the tool state keyed by its
 # absolute path: Claude Code (project transcripts + memory, ~/.claude.json,
-# prompt history), Orca's repo registration, Python venvs, direnv, git worktrees.
+# prompt history), Orca's repo registration, Python venvs, node_modules, direnv,
+# git worktrees.
 # Engram needs nothing: it names projects after the git remote, not the folder.
 #
 # Run it from outside the repo, with nothing running inside it (Claude sessions,
@@ -18,7 +19,7 @@
 
 set -euo pipefail
 
-[[ $# -eq 2 ]] || { sed -n '15,17p' "$0"; exit 1; }
+[[ $# -eq 2 ]] || { sed -n '16,18p' "$0"; exit 1; }
 
 DRY_RUN="${DRY_RUN:-1}"
 OLD="$(cd "$1" && pwd -P)"
@@ -71,6 +72,10 @@ HAS_WORKTREES=0
 VENV_DIRS=()
 while IFS= read -r v; do VENV_DIRS+=("$(dirname "${v#"$OLD"}")"); done \
   < <(fd -H -I -t d -g '.venv' --max-depth 4 -E node_modules "$OLD" | sed 's:/$::')
+# Same for node_modules; --prune skips the nested ones inside each node_modules.
+NODE_DIRS=()
+while IFS= read -r v; do NODE_DIRS+=("$(dirname "${v#"$OLD"}")"); done \
+  < <(fd -H -I -t d -g 'node_modules' --prune --max-depth 4 -E .git "$OLD" | sed 's:/$::')
 
 echo "Moving $OLD -> $NEW (DRY_RUN=$DRY_RUN)"
 
@@ -84,15 +89,6 @@ run cp "$HOME/.claude.json" "$BACKUP/claude.json"
 # --- 1. repo ---
 run mv "$OLD" "$NEW"
 [[ "$HAS_WORKTREES" == 1 ]] && run git -C "$NEW" worktree repair
-
-# Venvs hardcode absolute paths in activate scripts and shebangs: rebuild them.
-for dir in ${VENV_DIRS[@]+"${VENV_DIRS[@]}"}; do
-  dir="${dir%/}"
-  run rm -rf "$NEW$dir/.venv"
-  if [[ -f "$OLD$dir/pyproject.toml" || -f "$NEW$dir/pyproject.toml" ]]; then
-    run uv sync --project "$NEW$dir"
-  fi
-done
 
 # direnv approvals are keyed by path.
 [[ -f "$OLD/.envrc" ]] && run direnv allow "$NEW"
@@ -116,6 +112,31 @@ rewrite "$HOME/.claude/history.jsonl"
 rewrite "$HOME/.claude.json"
 [[ "$DRY_RUN" == 1 ]] || jq empty "$HOME/.claude.json"
 
+# --- 4. dependencies, last so a failed install can't leave the steps above half done ---
+# In the dry run the files are still at $OLD, so look for lockfiles there.
+SRC="$NEW"; [[ "$DRY_RUN" == 1 ]] && SRC="$OLD"
+FAILED=()
+deps() { run "$@" || FAILED+=("$*"); }
+
+# Venvs hardcode absolute paths in activate scripts and shebangs: rebuild them.
+for dir in ${VENV_DIRS[@]+"${VENV_DIRS[@]}"}; do
+  dir="${dir%/}"
+  run rm -rf "$NEW$dir/.venv"
+  [[ -f "$SRC$dir/pyproject.toml" ]] && deps uv sync --project "$NEW$dir"
+done
+
+# pnpm's .bin shims hardcode absolute paths too. Workspace packages without
+# their own lockfile get their node_modules back from the root install.
+for dir in ${NODE_DIRS[@]+"${NODE_DIRS[@]}"}; do
+  dir="${dir%/}"
+  run rm -rf "$NEW$dir/node_modules"
+  if [[ -f "$SRC$dir/pnpm-lock.yaml" ]]; then deps pnpm -C "$NEW$dir" install --frozen-lockfile
+  elif [[ -f "$SRC$dir/bun.lock" || -f "$SRC$dir/bun.lockb" ]]; then deps bun install --cwd "$NEW$dir" --frozen-lockfile
+  elif [[ -f "$SRC$dir/yarn.lock" ]]; then deps yarn --cwd "$NEW$dir" install
+  elif [[ -f "$SRC$dir/package-lock.json" ]]; then deps npm --prefix "$NEW$dir" ci
+  fi
+done
+
 # --- verify ---
 if [[ "$DRY_RUN" == 1 ]]; then
   echo "Dry run only. Re-run with DRY_RUN=0 to apply."
@@ -127,6 +148,7 @@ else
   rg -l -e "$OLD_RE" "${check[@]}" 2>/dev/null \
     && echo "(if ~/.claude.json is listed, another Claude session wrote it back; it only holds per-project settings, so re-running the rewrite is optional)" \
     || true
+  for f in ${FAILED[@]+"${FAILED[@]}"}; do echo "warning: failed, re-run by hand: $f"; done
   echo "Done. Backup: $BACKUP"
   [[ "$ORCA_RUNNING" == 1 ]] && echo "Orca: remove $NAME and add $NEW again."
   echo "Next: cd $NEW && claude --resume"
