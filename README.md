@@ -243,6 +243,22 @@ DRY_RUN=0 ./bin/move-repo.sh ~/Desktop/work/my-repo ~/Desktop/work/personal   # 
 
 Run it from outside the repo. It refuses while any process (shell, Claude session, dev server) has its working directory inside the repo, so agents in other projects can keep running. Everything it edits is backed up first to `~/.local/state/move-repo/`.
 
+### 8. `bin/move-session.sh` - Move one Claude session to another project
+
+Moves a single Claude Code session to another folder's project, plus the Engram memories you list:
+
+- The transcript and its `subagents`/`tool-results` folder, with the `"cwd"` fields rewritten (paths inside messages are left as is)
+- Each listed memory is re-created in the target Engram project with the same content, dates and the relations between moved memories, then the original is soft-deleted. Engram has no "change project" operation, so this goes through `engram export`/`import`
+
+Pick the memory ids yourself: a session often saves memories that belong to the old project. The target Engram project is the new folder's git remote name, or the folder name when there is no remote (`ENGRAM_PROJECT=name` overrides it).
+
+```bash
+./bin/move-session.sh <session-id> ~/Desktop/work/other-folder 1368 1369             # dry run
+DRY_RUN=0 ./bin/move-session.sh <session-id> ~/Desktop/work/other-folder 1368 1369   # apply
+```
+
+Close the session first: it refuses while a `claude` process has the id in its arguments or the transcript was written in the last 2 minutes (`FORCE=1` skips both checks). Run it yourself: Claude Code's auto mode blocks agents from editing transcripts. Everything it edits is backed up first to `~/.local/state/move-session/`.
+
 ## Installation
 
 1. Clone the repository to the shell utilities directory:
