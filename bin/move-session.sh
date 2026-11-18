@@ -15,6 +15,8 @@
 # Close the session first: it refuses while a process still has it open.
 # Claude Code's auto mode blocks agents from editing transcripts, so run it
 # yourself. Dry run by default; everything it edits is backed up first.
+# If the transcript already lives in <new-folder> (e.g. an earlier run moved it
+# but failed on the memories), it moves only the listed memories.
 #
 # Usage:
 #   ./bin/move-session.sh <session-id> <new-folder> [obs-id...]             # dry run
@@ -24,7 +26,7 @@
 
 set -euo pipefail
 
-[[ $# -ge 2 ]] || { sed -n '19,23p' "$0"; exit 1; }
+[[ $# -ge 2 ]] || { sed -n '21,25p' "$0"; exit 1; }
 
 DRY_RUN="${DRY_RUN:-1}"
 ID="$1"
@@ -46,11 +48,19 @@ OLD_FILE="$(fd -t f -d 2 -F "$ID.jsonl" "$CLAUDE_PROJ" | head -1)"
 [[ -n "$OLD_FILE" ]] || { echo "No transcript for $ID under $CLAUDE_PROJ"; exit 1; }
 OLD_DIR="$(dirname "$OLD_FILE")"
 NEW_DIR="$CLAUDE_PROJ/$NEW_DASH"
-[[ "$OLD_DIR" != "$NEW_DIR" ]] || { echo "Session already lives in $NEW"; exit 1; }
-[[ ! -e "$NEW_DIR/$ID.jsonl" && ! -e "$NEW_DIR/$ID" ]] || { echo "$NEW_DIR already has $ID"; exit 1; }
+# Memory-only mode: the transcript already lives in the target folder (an
+# earlier run moved it), so only the listed memories move.
+MEMORY_ONLY=0
+if [[ "$OLD_DIR" == "$NEW_DIR" ]]; then
+  [[ $# -gt 0 ]] || { echo "Session already lives in $NEW"; exit 1; }
+  MEMORY_ONLY=1
+else
+  [[ ! -e "$NEW_DIR/$ID.jsonl" && ! -e "$NEW_DIR/$ID" ]] || { echo "$NEW_DIR already has $ID"; exit 1; }
+fi
 # A resumed session has its id in argv; a fresh one doesn't, so also refuse
 # while the transcript was written in the last 2 minutes. FORCE=1 skips both.
-if [[ "${FORCE:-0}" != 1 ]]; then
+# Memory-only mode leaves the transcript alone, so it skips them too.
+if [[ "${FORCE:-0}" != 1 && "$MEMORY_ONLY" == 0 ]]; then
   procs="$(ps -axo comm=,args=)"   # not piped: rg -q exits early and pipefail would see SIGPIPE
   rg -q "^\S*claude\s.*$ID" <<<"$procs" && { echo "Session $ID is still running, close it first"; exit 1; }
   age=$(( $(date +%s) - $(stat -f %m "$OLD_FILE") ))
@@ -76,25 +86,33 @@ if [[ ${#OBS_IDS[@]} -gt 0 ]]; then
   TARGET_SESSION="manual-save-$ENGRAM_PROJECT"
 fi
 
-echo "Moving session $ID: $OLD_CWD -> $NEW (DRY_RUN=$DRY_RUN)"
-echo "  cwd fields to rewrite: $(rg -c -F -- "$FROM" "$OLD_FILE" || echo 0)"
+if [[ "$MEMORY_ONLY" == 1 ]]; then
+  echo "Session $ID already lives in $NEW, moving memories only (DRY_RUN=$DRY_RUN)"
+else
+  echo "Moving session $ID: $OLD_CWD -> $NEW (DRY_RUN=$DRY_RUN)"
+  echo "  cwd fields to rewrite: $(rg -c -F -- "$FROM" "$OLD_FILE" || echo 0)"
+fi
 [[ ${#OBS_IDS[@]} -gt 0 ]] && echo "  memories: ${#OBS_IDS[@]} from $SRC_PROJECT -> $ENGRAM_PROJECT"
 
 # --- backups ---
 run mkdir -p "$BACKUP"
-files=("$ID.jsonl"); [[ -d "$OLD_DIR/$ID" ]] && files+=("$ID")
-run tar -czf "$BACKUP/claude-session.tgz" -C "$OLD_DIR" -- "${files[@]}"
+if [[ "$MEMORY_ONLY" == 0 ]]; then
+  files=("$ID.jsonl"); [[ -d "$OLD_DIR/$ID" ]] && files+=("$ID")
+  run tar -czf "$BACKUP/claude-session.tgz" -C "$OLD_DIR" -- "${files[@]}"
+fi
 [[ ${#OBS_IDS[@]} -gt 0 ]] && run sqlite3 "$ENGRAM_DB" ".backup '$BACKUP/engram.db'"
 
 # --- 1. Claude transcript ---
-run mkdir -p "$NEW_DIR"
-run mv "$OLD_FILE" "$NEW_DIR/"
-[[ -d "$OLD_DIR/$ID" ]] && run mv "$OLD_DIR/$ID" "$NEW_DIR/"
-echo "+ rewrite $FROM -> $TO in $ID.jsonl and its subagents"
-if [[ "$DRY_RUN" != 1 ]]; then
-  sd -F -- "$FROM" "$TO" "$NEW_DIR/$ID.jsonl"
-  [[ -d "$NEW_DIR/$ID" ]] && fd -e jsonl . "$NEW_DIR/$ID" -x sd -F -- "$FROM" "$TO" {}
-  jq empty "$NEW_DIR/$ID.jsonl"
+if [[ "$MEMORY_ONLY" == 0 ]]; then
+  run mkdir -p "$NEW_DIR"
+  run mv "$OLD_FILE" "$NEW_DIR/"
+  [[ -d "$OLD_DIR/$ID" ]] && run mv "$OLD_DIR/$ID" "$NEW_DIR/"
+  echo "+ rewrite $FROM -> $TO in $ID.jsonl and its subagents"
+  if [[ "$DRY_RUN" != 1 ]]; then
+    sd -F -- "$FROM" "$TO" "$NEW_DIR/$ID.jsonl"
+    [[ -d "$NEW_DIR/$ID" ]] && fd -e jsonl . "$NEW_DIR/$ID" -x sd -F -- "$FROM" "$TO" {}
+    jq empty "$NEW_DIR/$ID.jsonl"
+  fi
 fi
 
 # --- 2. Engram memories ---
@@ -119,12 +137,12 @@ if [[ ${#OBS_IDS[@]} -gt 0 ]]; then
     {version, exported_at, sessions: $session, prompts: [],
      observations: [.observations[] | select(.id as $i | $ids | index($i))
        | del(.id) | .sync_id = $map[.sync_id] | .project = $p | .session_id = $s],
-     relations: [.relations[] | select($map[.source_id] and $map[.target_id])
+     relations: [(.relations // [])[] | select($map[.source_id] and $map[.target_id])
        | .source_id = $map[.source_id] | .target_id = $map[.target_id] | del(.sync_id)]}' "$EXPORT" > "$IMPORT"
   # Relations need their own fresh ids.
   jq '.relations |= map(.sync_id = "rel-" + .source_id[4:12] + .target_id[4:12])' "$IMPORT" > "$IMPORT.tmp" && mv "$IMPORT.tmp" "$IMPORT"
   touched="$(jq --argjson ids "$ids_json" '[.observations[] | select(.id as $i | $ids | index($i)) | .sync_id] as $s
-    | [.relations[] | select((.source_id as $x | $s | index($x)) or (.target_id as $x | $s | index($x)))] | length' "$EXPORT")"
+    | [(.relations // [])[] | select((.source_id as $x | $s | index($x)) or (.target_id as $x | $s | index($x)))] | length' "$EXPORT")"
   echo "  relations: $(jq '.relations | length' "$IMPORT") kept, $((touched - $(jq '.relations | length' "$IMPORT"))) dropped (other end stays behind)"
 
   run engram import "$IMPORT"
@@ -142,8 +160,10 @@ fi
 if [[ "$DRY_RUN" == 1 ]]; then
   echo "Dry run only. Re-run with DRY_RUN=0 to apply."
 else
-  echo "--- leftovers (expect 0) ---"
-  echo "old cwd fields: $(rg -c -F -- "$FROM" "$NEW_DIR/$ID.jsonl" || echo 0)"
+  if [[ "$MEMORY_ONLY" == 0 ]]; then
+    echo "--- leftovers (expect 0) ---"
+    echo "old cwd fields: $(rg -c -F -- "$FROM" "$NEW_DIR/$ID.jsonl" || echo 0)"
+  fi
   echo "Done. Backup: $BACKUP"
   echo "Next: cd $NEW && claude --resume $ID"
 fi
