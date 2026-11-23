@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> **Archived.** This repo moved to [guidodinello/shell-utils](https://github.com/guidodinello/shell-utils), which now holds everything from here. Make changes there.
+
 # Shell Utilities
 
 Collection of simple shell functionalities to enhance your development workflow.
